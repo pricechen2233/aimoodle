@@ -93,7 +93,7 @@ class robot {
             $this->maxlen = 4000;
             $modelname = 'gpt-4o-mini';
         } else if ($model == 2) {
-            // $this->url = 'http://192.168.111.143/api/v1/';//仅设置基础的url，后面使用的时候加入具体url地址
+            // $this->url = 'http://192.168.111.143:8080/api/v1/';//仅设置基础的url，后面使用的时候加入具体url地址
             // 从RAGflow提前建立好chat assistant和agent，并记录其id，这个两个模型已经配置好了，仅需要调用ragflow的API即可使用
             // $this->chatid = '0b01a94a06ee11f08c57e6b5b6021fd9';
             // $this->agentid = 'f34cb60e055911f09da3ce244deab092';
@@ -190,7 +190,7 @@ class robot {
             if(strlen($posts) > $maxlen_hat){
                 // 通过正则表达式找到最大长度内的最后一个句号、感叹号或问号
                 $pattern = '/[.!?。！？][\s]/'; // 匹配句号、感叹号、问号后的空格
-                $pos = strpos($posts, $pattern, $maxlen_hat); // 获取最大长度后的第一个空格位置
+                $pos = strrpos($posts, $pattern, $maxlen_hat); // 获取最大长度后的第一个空格位置
                 if ($pos === false) {
                     // 如果找不到空格，说明没有更多可切割的内容
                     $slice_posts = substr($posts, 0, $maxlen_hat);
@@ -198,12 +198,12 @@ class robot {
                     // 从最大长度位置向后查找一个完整的句子或段落
                     $slice_posts = substr($posts, 0, $pos);
                 }
-                $slice_posts = "you need to summarize this words:" . $slice_posts;
-                $slice_posts = self::post_to_api($slice_posts, TRUE); // 总结缩短文段长度
                 if (!$slice_posts) {
                     error_log("fail to slice the posts!!!");
                     throw new \moodle_exception('slicepostsfail', 'forum');
                 }
+                $slice_posts = "you need to summarize this words:" . $slice_posts;
+                $slice_posts = self::post_to_api($slice_posts, TRUE); // 总结缩短文段长度
                 if ($pos === false) {
                     $posts = $slice_posts . $short_posts(substr($posts, $maxlen_hat)); // 递归并合并
                 } else {
@@ -378,7 +378,7 @@ class robot {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         if ($method == 'DELETE') {
             curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        }
+        } //减少删除session时的等待时间，做到异步
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',  // 设置为JSON
             'Authorization: Bearer ' . $this->apiKey, // 使用Bearer认证
