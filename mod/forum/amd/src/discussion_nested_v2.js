@@ -397,14 +397,6 @@ const registerEventListeners = (root) => {
         });
     });
 
-    // 添加 robot 按钮点击事件监听器
-    root.on('click', '[data-action="send-to-robot"]', function(e) {
-        e.preventDefault();
-        const postContainer = getPostContainer($(e.currentTarget));
-        const postId = postContainer.data('post-id');
-        sendPostToRobot(postId);
-    });
-
 };
 
 /**
@@ -438,46 +430,4 @@ export const init = (root, context) => {
         const newTargetState = response.userstate.subscribed ? 0 : 1;
         toggleElement.data('targetstate', newTargetState);
     });
-};
-
-const sendPostToRobot = (postId) => {
-    // 获取帖子内容
-    const postContent = $(`#p${postId} .post-content`).text();
-
-    // 发送到GPT API处理
-    $.ajax({
-        url: 'https://127.0.0.1/process',
-        method: 'POST',
-        data: { content: postContent },
-        success: (response) => {
-            // 处理返回结果并跟帖
-            const robotReply = response.result;
-            addReplyAsRobot(postId, robotReply);
-        },
-        error: (error) => {
-            console.error('Error sending post to GPT API:', error);
-            alert("Error!!!");
-        }
-    });
-};
-
-const addReplyAsRobot = (postId, replyContent) => {
-    // 创建一个新的跟帖
-    const newPost = {
-        subject: 'Robot Reply',
-        message: replyContent,
-        userid: 12345, // 假设 robot 用户的 ID 为 12345
-        parent: postId,
-        created: Date.now()
-    };
-
-    // 调用 API 将新帖子添加到讨论中
-    Repository.addDiscussionPost(newPost.postid, newPost.subject, newPost.message, newPost.messageformat, false, true)
-        .then(() => {
-            // 刷新页面或更新讨论
-            location.reload();
-        })
-        .catch((error) => {
-            console.error('Error adding robot reply:', error);
-        });
 };

@@ -92,13 +92,6 @@ define([
             }
         });
 
-        root.on('click', Selectors.post.robotlink, function(e){
-            e.preventDefault();
-            // 处理点击事件的逻辑
-            console.log('Robot link clicked');
-            // 例如，调用一个名为 handleRobotLinkClick 的函数
-            handleRobotLinkClick(e);
-        });
     };
 
     return {
@@ -108,10 +101,3 @@ define([
         }
     };
 });
-
-// 实现 handleRobotLinkClick 函数
-var handleRobotLinkClick = function(e) {
-    // 实现点击事件的处理逻辑
-    // 例如，显示一个通知
-    Notification.alert('Robot Link', 'You clicked the robot link!');
-};

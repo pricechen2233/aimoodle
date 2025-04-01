@@ -195,7 +195,7 @@ define([
         root.on('click', Selectors.post.inpageCancelButton, function(e) {
             // Tell formchangechecker to reset the form state.
             FormChangeChecker.resetFormDirtyState(e.currentTarget);
-        });  
+        });
     };
 
     return {
