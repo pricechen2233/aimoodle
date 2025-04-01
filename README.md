@@ -70,7 +70,9 @@ Moodle is provided freely as open source software, under version 3 of the GNU Ge
 
 </VirtualHost>
 ```
+
 2.在插件配置中按提示配置模型API url，以及相关信息。
+
 3.该版本目前支持两种机器人基础模型，即GPT4o-mini和GPT3.5-turbo，支持ragflow的api调用，后续将持续引入更多模型，并优化机器人性能。
 
 
