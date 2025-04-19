@@ -77,34 +77,31 @@ class robot {
         
         $modelname = null;
         if ($model == 0) {
-            //$this->url = 'https://api.openai.com/v1/chat/completions';
             // 后期考虑如何安全的由用户配置输入apikey，目前版本可以考虑在系统环境中插入apikey
-            $this->apiKey = getenv('apikey');
+            $this->apiKey = strval($CFG->forum_apikey);
             $this->chatid = null;
             $this->agentid = null;
             $this->maxlen = 2000;
             $modelname = 'gpt-3.5-turbo';
         } else if ($model == 1) {
-            //$this->url = 'https://api.openai.com/v1/chat/completions';
             // 后期考虑如何安全的由用户配置输入apikey，目前版本可以考虑在系统环境中插入apikey
-            $this->apiKey = getenv('apikey');
+            $this->apiKey = strval($CFG->forum_apikey);
             $this->chatid = null;
             $this->agentid = null;
             $this->maxlen = 4000;
             $modelname = 'gpt-4o-mini';
         } else if ($model == 2) {
-            // $this->url = 'http://192.168.111.143:8080/api/v1/';//仅设置基础的url，后面使用的时候加入具体url地址
             // 从RAGflow提前建立好chat assistant和agent，并记录其id，这个两个模型已经配置好了，仅需要调用ragflow的API即可使用
             // $this->chatid = '0b01a94a06ee11f08c57e6b5b6021fd9';
             // $this->agentid = 'f34cb60e055911f09da3ce244deab092';
-            // $this->apiKey = 'ragflow-I2YjkzMjA2MDgwNzExZjBiYWE2OGU3MD';//这个是临时加的，之后会去掉
-            $this->apiKey = getenv('agentkey');
+            //$this->apiKey = 'ragflow-I2YjkzMjA2MDgwNzExZjBiYWE2OGU3MD';//这个是临时加的，之后会去掉
+            //$this->apiKey = getenv('apikey');
+            $this->apiKey = strval($CFG->forum_apikey);
             $this->chatid = strval($CFG->forum_chatid);
             $this->agentid = strval($CFG->forum_agentid);
             $this->maxlen = 4000;
             $modelname = 'rag-model';
         }
-        // error_log("model---".$model."modelname---".$modelname);
 
         return $modelname;
     }
@@ -216,7 +213,6 @@ class robot {
         };
         $merged_posts = $short_posts($merged_posts);
 
-        // error_log("merged_posts after_____" . $merged_posts);-------------!
 
         // 调用API进行回答
         $prompt = "you need to reply students and back with Subject:...Message:...";
@@ -245,6 +241,12 @@ class robot {
         // 返回的最大token数
         $numlongpost = intval($CFG->forum_longpost);
 
+        // 检查输入内容是否为空
+        if (empty($merged_posts)) {
+            echo "Merged posts are empty, cannot send request to the API.\n";
+            throw new \moodle_exception('emptymergedposts', 'forum');
+        }
+
         // 对于session的处理
         $createsessions = false;
         $deletesessions = false;
@@ -259,12 +261,6 @@ class robot {
             You need to pay attention to the interaction with your students. You need to reply by Chinese.';
             if ($conclusion) {
                 $content = 'You are a helpful tutor, and you need to summarize the discussion of students.';
-            }
-
-            // 检查输入内容是否为空
-            if (empty($merged_posts)) {
-                echo "Merged posts are empty, cannot send request to the API.\n";
-                throw new \moodle_exception('emptymergedposts', 'forum');
             }
 
             // 构建上传内容
@@ -426,5 +422,16 @@ class robot {
         $response = self::execute_curl($url, $data, 'DELETE');
 
         return 0;
+    }
+
+    /**
+     * 该函数用于调用API接口访问机器人的测试！！！
+     * @param stdClass $parent
+     * @param stdClass $discussion
+     * @param stdClass $forum
+     * @return string robot's response
+     */
+    public function test_call_robot(stdClass $parent, stdClass $discussion, stdClass $forum): string{
+        return "this is a robot test!";
     }
 }

@@ -805,6 +805,11 @@ $string['chatid'] = 'the chat assailant id'; //---------------------!
 $string['agentid'] = 'the agent id'; //---------------------!
 $string['configchatid'] = 'input the chat assailant id of the ragflow'; //-------------------!
 $string['configagentid'] = 'input the agent id of the ragflow'; //-------------------!
+$string['robotapikey'] = 'Robot API KET'; //----------------------!
+$string['configrobotapikey'] = 'input robot API KET here'; //-------------------!
+$string['robotreplyprocessing'] = 'Robot is replying!Please wait a moment!';//----------------!
+$string['newpostnotify'] = 'You have a new robot reply!'; //--------------!
+$string['newpostsmall'] = 'New robot reply in discussion: {$a}'; //---------------!
 
 // Deprecated since Moodle 4.3.
 $string['completionpostsgroup'] = 'Require posts';

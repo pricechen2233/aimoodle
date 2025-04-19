@@ -26,7 +26,7 @@ require_once('../../config.php');
 require_once('lib.php');
 require_once($CFG->libdir.'/completionlib.php');
 
-use mod_forum\local\vaults\robot as robot_process;
+use mod_forum\task\robot_reply_task as robot_reply_task;
 
 $reply   = optional_param('reply', 0, PARAM_INT);
 //-----------------------------!
@@ -373,71 +373,43 @@ if (!empty($forum)) {
 
     require_login($course, false, $cm);
 
-    $replycount = $postvault->get_reply_count_for_post_id_in_discussion_id(
-        $USER, $parententity->get_id(), $discussionentity->get_id(), true);
-    
-    // 定义机器人回复类
-    $myrobot = new robot_process($parententity, $discussionentity, $forumentity);
-    // 启动机器回复
-    $robotresponse = $myrobot->call_robot($parent,$discussion,$forum);
+    // 准备异步任务数据
+    $taskdata = [
+        'parentid' => $parententity->get_id(),
+        'discussionid' => $discussionentity->get_id(),
+        'forumid' => $forumentity->get_id(),
+        'courseid' => $course->id,
+        'cmid' => $cm->id,
+        'userid' => $USER->id,
+        'subject' => $subject ?: $parent->subject,
+        'parentsubject' => $parent->subject,
+        'groupid' => ($discussion->groupid == -1) ? 0 : $discussion->groupid,
+        'parentauthorid' => $parent->userid
+    ];
 
-    // Load up the $post variable.
-    $post = new stdClass();
-    $post->course      = $course->id;
-    $post->forum       = $forum->id;
-    $post->discussion  = $parent->discussion;
-    $post->parent      = $parent->id;
-    $post->subject     = $subject ? $subject : $parent->subject;
-    $post->userid      = $USER->id;
-    $post->parentpostauthor = $parent->userid;
-    $post->message     = $robotresponse;
-    $canreplyprivately = $capabilitymanager->can_reply_privately_to_post($USER, $parententity);
+    // 创建并排队异步任务
+    $task = new robot_reply_task();
+    $task->set_custom_data($taskdata);
+    \core\task\manager::queue_adhoc_task($task);
 
-    $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
-
-    $strre = 'Robot reply to me:';
-    $pattern = '/Subject:([\s\S]*?)Message:/';
-    if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
-        if (preg_match($pattern, $post->message, $matches)) {
-            $post->subject = $matches[1];
-        }
-        $post->subject = $strre.' '.$post->subject;
+    // 立即返回响应
+    if ($forumentity->get_type() == 'single') {
+        $discussionurl = $urlfactory->get_forum_view_url_from_forum($forumentity);
+    } else {
+        $discussionurl = $urlfactory->get_discussion_view_url_from_discussion($discussionentity);
     }
+
+    redirect(
+        forum_go_back_to($discussionurl),
+        get_string('robotreplyprocessing', 'forum'),
+        null,
+        \core\output\notification::NOTIFY_SUCCESS
+    );
 
     // Unsetting this will allow the correct return URL to be calculated later.
     unset($SESSION->fromdiscussion);
-
-    // 将机器返回数据写入
-    try {
-        $newpostid = forum_add_new_post($post,$forum);
-
-        if ($forumentity->get_type() == 'single') {
-            // Single discussion forums are an exception.
-            // We show the forum itself since it only has one discussion thread.
-            $discussionurl = $urlfactory->get_forum_view_url_from_forum($forumentity);
-        } else {
-            $discussionurl = $urlfactory->get_discussion_view_url_from_discussion($discussionentity);
-        }
-
-        redirect(
-            forum_go_back_to($discussionurl),
-            get_string('eventrobotreplyed', 'mod_forum'),
-            null,
-            \core\output\notification::NOTIFY_SUCCESS
-        );
-
-    } catch (Exception $e) {
-        redirect(
-            $urlfactory->get_discussion_view_url_from_discussion($discussionentity),
-            $e->getMessage(),
-            null,
-            \core\output\notification::NOTIFY_ERROR
-        );
-    }
-
-    echo $OUTPUT->footer();
-    die;
-    //...........................!
+    // echo $OUTPUT->footer();
+    // die;
 
 } else if (!empty($edit)) {
     // User is editing their own post.

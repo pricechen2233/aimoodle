@@ -143,11 +143,15 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('forum_connecturl', get_string('connecturl', 'forum'), 
                         get_string('configconnecturl', 'forum'), 'https://api.openai.com/v1/chat/completions', PARAM_URL));
     
+    // 要求用户输入需要其API KEY
+    $settings->add(new admin_setting_configtext('forum_apikey', get_string('robotapikey', 'forum'),
+                        get_string('configrobotapikey', 'forum'), 'sk-xxxxxx / ragflow-xxxx', PARAM_TEXT));
+
     // 设置是否调用Robot按钮，默认不调用
     $settings->add(new admin_setting_configcheckbox('forum_userobotreply', get_string('userobotreply', 'forum'),
                        get_string('configuserobotreply', 'forum'), 0));
     
-    // 设置API访问接口，用户可以填入
+    // 设置API访问接口，用户可以选择三种模型
     $options = array(
         0 => get_string('gpt3model', 'forum'),
         1 => get_string('gpt4ominimodel', 'forum'),
