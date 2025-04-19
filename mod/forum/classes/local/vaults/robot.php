@@ -92,9 +92,6 @@ class robot {
             $modelname = 'gpt-4o-mini';
         } else if ($model == 2) {
             // 从RAGflow提前建立好chat assistant和agent，并记录其id，这个两个模型已经配置好了，仅需要调用ragflow的API即可使用
-            // $this->chatid = '0b01a94a06ee11f08c57e6b5b6021fd9';
-            // $this->agentid = 'f34cb60e055911f09da3ce244deab092';
-            //$this->apiKey = 'ragflow-I2YjkzMjA2MDgwNzExZjBiYWE2OGU3MD';//这个是临时加的，之后会去掉
             //$this->apiKey = getenv('apikey');
             $this->apiKey = strval($CFG->forum_apikey);
             $this->chatid = strval($CFG->forum_chatid);
@@ -176,7 +173,7 @@ class robot {
         // 查找合并父帖子直到根帖
         // 如果该帖子的作者为机器人，则不予回复
         if (substr($parent->subject, 0, 5) === "Robot") {
-            throw new \moodle_exception("rejectreply","forum");
+            return get_string("rejectreply","forum");
         }
         $merged_posts = self::get_parent_posts($parent, $all_posts);
         $merged_posts = strip_tags($merged_posts); // 去除HTML标签
@@ -431,7 +428,7 @@ class robot {
      * @param stdClass $forum
      * @return string robot's response
      */
-    public function test_call_robot(stdClass $parent, stdClass $discussion, stdClass $forum): string{
-        return "this is a robot test!";
-    }
+    //public function test_call_robot(stdClass $parent, stdClass $discussion, stdClass $forum): string{
+    //    return "this is a robot test!";
+    //}
 }
